@@ -11,7 +11,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      NODE_ENV: test              # NEW in this lab: job-level variable, visible to every step below
+      NODE_ENV: test
     steps:
       - uses: actions/checkout@v4
 
@@ -21,7 +21,7 @@ jobs:
 
       - run: npm install
 
-      - name: Show job-level variable       # NEW in this lab
+      - name: Show job-level variable
         run: echo "Running in $NODE_ENV"
 
       - name: Use a secret safely
@@ -32,3 +32,14 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+      - name: Generate test report for artifact   # NEW in this lab
+        if: always()
+        run: npm test -- --json --outputFile=test-report.json || true
+
+      - name: Upload test report                   # NEW in this lab: downloadable from the run summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: test-report.json
