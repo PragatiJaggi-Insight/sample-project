@@ -10,6 +10,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test              # NEW in this lab: job-level variable, visible to every step below
     steps:
       - uses: actions/checkout@v4
 
@@ -19,8 +21,11 @@ jobs:
 
       - run: npm install
 
-      - name: Use a secret safely           # NEW in this lab: requires a repo secret named DEMO_TOKEN
-        env:                                 # Settings -> Secrets and variables -> Actions -> New repository secret
+      - name: Show job-level variable       # NEW in this lab
+        run: echo "Running in $NODE_ENV"
+
+      - name: Use a secret safely
+        env:
           DEMO_TOKEN: ${{ secrets.DEMO_TOKEN }}
         run: |
           echo "Token length: ${#DEMO_TOKEN}"
