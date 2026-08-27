@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test              # NEW in this lab: job-level variable, visible to every step below
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - run: npm install
+
+      - name: Show job-level variable       # NEW in this lab
+        run: echo "Running in $NODE_ENV"
+
+      - name: Use a secret safely
+        env:
+          DEMO_TOKEN: ${{ secrets.DEMO_TOKEN }}
+        run: |
+          echo "Token length: ${#DEMO_TOKEN}"
+
+      - name: Run tests
+        run: npm test
