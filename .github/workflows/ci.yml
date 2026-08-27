@@ -19,6 +19,11 @@ jobs:
 
       - run: npm install
 
+      - name: Use a secret safely           # NEW in this lab: requires a repo secret named DEMO_TOKEN
+        env:                                 # Settings -> Secrets and variables -> Actions -> New repository secret
+          DEMO_TOKEN: ${{ secrets.DEMO_TOKEN }}
+        run: |
+          echo "Token length: ${#DEMO_TOKEN}"
+
       - name: Run tests
         run: npm test
-
