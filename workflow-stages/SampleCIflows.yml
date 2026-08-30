@@ -1,0 +1,55 @@
+# Reference examples for Slide 14 (Triggers & Events) - "Manual & Repo Events"
+# and "Schedule & External" trigger types. These are teaching snippets, not one
+# single runnable workflow - copy whichever `on:` block you need into a real file.
+
+# ---------------------------------------------------------------------------
+# repository_dispatch: triggered by an external system calling GitHub's API,
+# not by a person clicking a button. Example: an internal tool announces a new
+# library version, and this workflow bumps package.json to match.
+# ---------------------------------------------------------------------------
+on:
+  repository_dispatch:
+    types: [library-updated]
+
+# ---------------------------------------------------------------------------
+# issues: triggered when an issue is opened, closed, labeled, edited, etc.
+# Example: auto-label every newly opened issue as "needs-triage".
+# ---------------------------------------------------------------------------
+on:
+  issues:
+    types: [opened]
+
+# ---------------------------------------------------------------------------
+# release: triggered when a release is created, published, edited, or deleted.
+# Example: announce a newly published release in a chat channel.
+# ---------------------------------------------------------------------------
+on:
+  release:
+    types: [published]
+
+# ---------------------------------------------------------------------------
+# schedule: runs on a timer using cron syntax (minute hour day month weekday),
+# no human or push required. Example: every night at 2 AM.
+# ---------------------------------------------------------------------------
+on:
+  schedule:
+    - cron: "0 2 * * *"
+
+# ---------------------------------------------------------------------------
+# workflow_call: lets one workflow be called by another, like a function, so
+# shared steps aren't copy-pasted across repos.
+# ---------------------------------------------------------------------------
+# In the shared/reusable workflow file (e.g. shared-test.yml):
+on:
+  workflow_call:
+
+# In the calling repo's own workflow, referencing that shared file:
+jobs:
+  call-shared:
+    uses: your-org/shared-repo/.github/workflows/shared-test.yml@main
+
+# ---------------------------------------------------------------------------
+# External webhooks: not a keyword of its own - any outside system (e.g. a
+# monitoring tool) calls GitHub's API to start a run. In practice this is
+# implemented using repository_dispatch, shown above.
+# ---------------------------------------------------------------------------
