@@ -1,48 +1,45 @@
-name: Deploy Azure Resource (Demo)
+name: CI
 
 on:
   workflow_dispatch:
-    inputs:
-      resourceGroupName:
-        description: "Name of the Azure resource group to create"
-        required: true
-        default: "tasktracker-demo-rg"
-      location:
-        description: "Azure region"
-        required: true
-        default: "eastus"
-
-permissions:
-  id-token: write   # required for OIDC login - lets GitHub request a short-lived Azure token, no stored password
-  contents: read
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
 
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
     steps:
       - uses: actions/checkout@v4
 
-      - name: Log in to Azure (OIDC - no client secret stored in GitHub)
-        uses: azure/login@v2
+      - uses: actions/setup-node@v4
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          node-version: "20"
 
-      - name: Create resource group
-        run: |
-          az group create \
-            --name "${{ inputs.resourceGroupName }}" \
-            --location "${{ inputs.location }}"
+      - run: npm install
 
-      - name: Deploy a storage account (example resource)
-        run: |
-          az storage account create \
-            --name "tttraining$RANDOM" \
-            --resource-group "${{ inputs.resourceGroupName }}" \
-            --location "${{ inputs.location }}" \
-            --sku Standard_LRS
+      - name: Show job-level variable
+        run: echo "Running in $NODE_ENV"
 
-      - name: Show what was deployed
+      - name: Use a secret safely
+        env:
+          DEMO_TOKEN: ${{ secrets.DEMO_TOKEN }}
         run: |
-          az resource list --resource-group "${{ inputs.resourceGroupName }}" --output table
+          echo "Token length: ${#DEMO_TOKEN}"
+
+      - name: Run tests
+        run: npm test
+
+      - name: Generate test report for artifact   # NEW in this lab
+        if: always()
+        run: npm test -- --json --outputFile=test-report.json || true
+
+      - name: Upload test report                   # NEW in this lab: downloadable from the run summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: test-report.json
